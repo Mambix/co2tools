@@ -55,16 +55,21 @@ class Builder:
                 elements[layer] = extruded
         return elements
 
-    def __init__(self, dxf_file, source_folder=None, target_folder=None):
+    def __init__(self, dxf_file, source_folder=None, target_folder=None, base_folder=None):
+        self.__base_folder = None
+        if base_folder is not None:
+            self.__base_folder = base_folder
+            if self.__base_folder[-1] != '/':
+                self.__base_folder += '/'
         self.__source_folder = None
         if source_folder is not None:
             self.__source_folder = source_folder
         self.__target_folder = None
         if target_folder is not None:
             self.__target_folder = target_folder
-        self.__dxf_file = '{}/{}'.format(self.__source_folder, dxf_file)
+        self.__dxf_file = '{}{}/{}'.format(self.__base_folder, self.__source_folder, dxf_file)
         if not os.path.isfile(self.__dxf_file):
-            raise IOError("ERROR", "File not found!!!")
+            raise IOError(2, 'No such file or directory: \'{}\''.format(self.__dxf_file))
 
         self.dxf = None
         self.layers = None
@@ -74,23 +79,24 @@ class Builder:
             self.dxf = trimesh.load(self.__dxf_file)
             self.layers = np.unique(self.dxf.metadata['layers'])
         except ValueError as e:
-            raise BaseException('ERROR', '{}: {}'.format(self.__dxf_file, e))
+            raise BaseException(e, '{}: {}'.format(self.__dxf_file, e))
 
         self.LAYER_HOLES = 'HOLES'
+        self.LAYER_HOLES2 = 'HOLES_PLEXI'
         self.LAYER_CUT = 'CUT'
         self.ENGINE = 'blender'
         self.THREADS = 6
-        print('\tSource: {}'.format(self.__dxf_file))
+        print('    Source: {}'.format(self.__dxf_file))
 
     def extrude(self, extrude_height):
         dxf_elements = self.__dxf_elements(extrude_height)
         if dxf_elements is None:
             return
-        print(dxf_elements.keys())
+        print('        Layers: {}'.format(dxf_elements.keys()))
         self.stl = dxf_elements[self.LAYER_CUT]
-        if 'IZREZ_PLEXI' in dxf_elements:
-            if dxf_elements['IZREZ_PLEXI'] != []:
-                self.stl = self.stl.difference(dxf_elements['IZREZ_PLEXI'], engine=self.ENGINE)
+        if self.LAYER_HOLES2 in dxf_elements:
+            if dxf_elements[self.LAYER_HOLES2] != []:
+                self.stl = self.stl.difference(dxf_elements[self.LAYER_HOLES2], engine=self.ENGINE)
         if self.LAYER_HOLES in dxf_elements:
             holes_elements = dxf_elements[self.LAYER_HOLES]
             if not isinstance(dxf_elements, list):
@@ -133,14 +139,14 @@ class Builder:
     def save(self, stl_file):
         if self.stl is None:
             raise BaseException("ERROR", "No STL data to save!!!")
-        stl_file = '{}/{}'.format(self.__target_folder, stl_file)
-        print('\t\tSaving: {}'.format(stl_file))
+        stl_file = '{}{}/{}'.format(self.__base_folder, self.__target_folder, stl_file)
+        print('        Saving: {}'.format(stl_file))
         self.stl.export(stl_file)
 
     def build(self, yaml_data, stl_file):
         for operations in yaml_data:
             for operation, instructions in operations.items():
-                print('\t\t{}: {}'.format(operation, instructions))
+                print('        {}: {}'.format(operation, instructions))
                 if operation == 'extrude':
                     self.extrude(instructions)
         self.save(stl_file)

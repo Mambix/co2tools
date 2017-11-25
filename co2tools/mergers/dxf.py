@@ -10,14 +10,19 @@ class DXF:
             lay = src_dxf.layers.get(layer_name)
             dxf.layers.new(name=lay.dxf.name, dxfattribs={'linetype': lay.dxf.linetype, 'color': lay.dxf.color})
 
-    def __init__(self, dxf_file, ignore_layers=None, rename_layers=None, source_folder=None, target_folder=None):
+    def __init__(self, dxf_file, ignore_layers=None, rename_layers=None, base_folder=None, source_folder=None, target_folder=None):
+        self.__base_folder = None
+        if base_folder is not None:
+            self.__base_folder = base_folder
+            if self.__base_folder[-1] != '/':
+                self.__base_folder += '/'
         self.__source_folder = None
         if source_folder is not None:
             self.__source_folder = source_folder
         self.__target_folder = None
         if target_folder is not None:
             self.__target_folder = target_folder
-        self.__dxf_file = '{}/{}'.format(self.__target_folder, dxf_file)
+        self.__dxf_file = '{}{}/{}'.format(self.__base_folder, self.__target_folder, dxf_file)
         if os.path.isfile(self.__dxf_file):
             os.remove(self.__dxf_file)
         print('Target: {}'.format(self.__dxf_file))
@@ -29,11 +34,11 @@ class DXF:
             self.__rename_layers = rename_layers
 
     def merge(self, merge_dxf, move=(0.0, 0.0)):
-        merge_dxf = '{}/{}'.format(self.__source_folder, merge_dxf)
+        merge_dxf = '{}{}/{}'.format(self.__base_folder, self.__source_folder, merge_dxf)
         if not os.path.isfile(merge_dxf):
-            raise IOError("ERROR", "File not found!!!")
+            raise IOError(2, 'No such file or directory: \'{}\''.format(merge_dxf))
         if not ezdxf.is_dxf_file(merge_dxf):
-            raise IOError("ERROR", "File is not a valid DXF!!!")
+            raise IOError(2, 'No such file or directory: \'{}\''.format(merge_dxf))
         src = ezdxf.readfile(merge_dxf)
 
         print('\tAdding {}[{}] @ {}'.format(merge_dxf, src.dxfversion, move))

@@ -164,3 +164,4 @@ src/build.number
 .idea/
 *.dxf
 *.FCMacro
+*.yml
