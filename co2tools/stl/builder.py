@@ -33,11 +33,11 @@ class Builder:
 
     def __dxf_elements(self, extrude_height=None):
         elements = {}
-        for layer in self.__layers:
+        for layer in self.layers:
             if layer == '0':
                 continue
-            E = copy.deepcopy(self.__dxf.entities[self.__dxf.metadata['layers'] == layer])
-            path = trimesh.path.Path2D(entities=E, vertices=self.__dxf.vertices.copy())
+            E = copy.deepcopy(self.dxf.entities[self.dxf.metadata['layers'] == layer])
+            path = trimesh.path.Path2D(entities=E, vertices=self.dxf.vertices.copy())
             if extrude_height is None:
                 elements[layer] = path
             else:
@@ -55,23 +55,32 @@ class Builder:
                 elements[layer] = extruded
         return elements
 
-    def __init__(self, dxf_file):
-        if not os.path.isfile(dxf_file):
+    def __init__(self, dxf_file, source_folder=None, target_folder=None):
+        self.__source_folder = None
+        if source_folder is not None:
+            self.__source_folder = source_folder
+        self.__target_folder = None
+        if target_folder is not None:
+            self.__target_folder = target_folder
+        self.__dxf_file = '{}/{}'.format(self.__source_folder, dxf_file)
+        if not os.path.isfile(self.__dxf_file):
             raise IOError("ERROR", "File not found!!!")
-        self.__dxf_file = dxf_file
+
+        self.dxf = None
+        self.layers = None
+        self.stl = None
+
         try:
-            self.__dxf = trimesh.load(self.__dxf_file)
-            self.__layers = np.unique(self.__dxf.metadata['layers'])
+            self.dxf = trimesh.load(self.__dxf_file)
+            self.layers = np.unique(self.dxf.metadata['layers'])
         except ValueError as e:
-            raise BaseException('{}: {}'.format(self.__dxf_file, e))
+            raise BaseException('ERROR', '{}: {}'.format(self.__dxf_file, e))
+
         self.LAYER_HOLES = 'HOLES'
         self.LAYER_CUT = 'CUT'
         self.ENGINE = 'blender'
         self.THREADS = 6
-        self.stl = trimesh.load(self.__dxf_file)
-
-    # def load_trimesh(self):
-    #     self.stl = trimesh.load(self.__dxf_file)
+        print('\tSource: {}'.format(self.__dxf_file))
 
     def extrude(self, extrude_height):
         dxf_elements = self.__dxf_elements(extrude_height)
@@ -115,10 +124,6 @@ class Builder:
             self.stl = self.stl.difference(holes_elements[0], engine=self.ENGINE)
         # self.stl.show()
 
-    # def transform(self, transformations):
-    #     for trans in transformations:
-    #         self.stl.apply_transform(trans)
-
     def translate(self, matrix):
         self.stl.apply_transform(self.translation_matrix(matrix))
 
@@ -128,4 +133,14 @@ class Builder:
     def save(self, stl_file):
         if self.stl is None:
             raise BaseException("ERROR", "No STL data to save!!!")
+        stl_file = '{}/{}'.format(self.__target_folder, stl_file)
+        print('\t\tSaving: {}'.format(stl_file))
         self.stl.export(stl_file)
+
+    def build(self, yaml_data, stl_file):
+        for operations in yaml_data:
+            for operation, instructions in operations.items():
+                print('\t\t{}: {}'.format(operation, instructions))
+                if operation == 'extrude':
+                    self.extrude(instructions)
+        self.save(stl_file)

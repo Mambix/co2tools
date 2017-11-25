@@ -3,7 +3,7 @@ import os
 import operator
 
 
-class Dwg:
+class DXF:
     @staticmethod
     def add_layer(layer_name, dxf, src_dxf):
         if layer_name not in dxf.layers:
@@ -154,16 +154,16 @@ class Dwg:
             # target_msp.add_entity(e)
         dxf.saveas(self.__dxf_file)
 
-    def merge_files(self, sources):
-        if isinstance(sources, dict):
-            for source, copies in sources.items():
+    def merge_files(self, yaml_data):
+        if isinstance(yaml_data, dict):
+            for source, copies in yaml_data.items():
                 if not isinstance(copies[0], list):
                     copies = [copies]
                 for copy in copies:
                     self.merge(source, move=(copy[0], copy[1]))
             return
-        if isinstance(sources, list):
-            for source in sources:
+        if isinstance(yaml_data, list):
+            for source in yaml_data:
                 for file, dic in source.items():
                     if isinstance(dic, dict):
                         move = (0.0, 0.0)

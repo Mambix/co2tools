@@ -1,107 +1,88 @@
-import math
-from co2tools.mergers.dwg import Dwg
+import sys
+from co2tools.mergers.dxf import DXF
 from co2tools.stl.builder import Builder
-from yaml import load, dump
-# try:
-#     from yaml import CLoader as Loader, CDumper as Dumper
-# except ImportError:
-#     from yaml import Loader, Dumper
+from yaml import load
 
+
+def merge(yaml_data, execute_action=None, execute_group=None):
+    if execute_action is not None:
+        if execute_action != 'merge':
+            return
+    merge_data = yaml_data['merge']
+    source_folder = merge_data.get('sourceDirectory', None)
+    target_folder = merge_data.get('targetDirectory', None)
+    groups = merge_data.get('groups', None)
+    if groups is None:
+        groups = ['default']
+    if execute_group is not None:
+        if execute_group in groups:
+            groups = [execute_group]
+        else:
+            raise BaseException('ERROR', 'Missing section {} in YAML file!!!'.format(execute_section))
+    for execute_group in groups:
+        dxf_data = merge_data[execute_group]
+        print(dxf_data)
+        for target, yaml_data in dxf_data.items():
+            md = DXF(target, source_folder=source_folder, target_folder=target_folder)
+            md.merge_files(yaml_data)
+
+def solidify(yaml_data, execute_action=None, execute_group=None):
+    if execute_action is not None:
+        if execute_action != 'solidify':
+            return
+    solid_data = yaml_data['solidify']
+    print(solid_data)
+    source_folder = solid_data.get('sourceDirectory', None)
+    target_folder = solid_data.get('targetDirectory', None)
+    groups = solid_data.get('groups', None)
+    if groups is None:
+        groups = ['default']
+    else:
+        solid_data = groups
+    if execute_group is not None:
+        if execute_group in groups:
+            groups = [execute_group]
+        else:
+            raise BaseException('ERROR', 'Missing section {} in YAML file!!!'.format(execute_section))
+    for execute_group in groups:
+        print('Processing group: {}'.format(execute_group))
+        dxf_data = solid_data[execute_group]
+        for source, data in dxf_data.items():
+            target = data.get('save', '{}.stl'.format(source[:-4]))
+            modifications = data.get('modifications', None)
+            if modifications is None:
+                raise BaseException('ERROR', 'No \'modifications\' section in YAML file!!!')
+            b = Builder(source, source_folder=source_folder, target_folder=target_folder)
+            b.build(modifications, target)
+
+def help():
+    print('Help...')
 
 if __name__ == "__main__":
     yaml_file = '../.co2tools.yml'
+    execute_action = None
+    execute_section = None
+
+    if len(sys.argv) > 1:
+        execute_action = sys.argv[1]
+        if execute_action.lower() == 'help':
+            help()
+            quit()
+    if len(sys.argv) > 2:
+        execute_section = sys.argv[2]
 
     with open(yaml_file, 'r') as f:
         yaml_data = load(f)
         # print(yaml_data)
 
+    source_folder = yaml_data.get('sourceDirectory', None)
+    target_folder = yaml_data.get('targetDirectory', None)
+
     if 'merge' in yaml_data:
-        merge_data = yaml_data['merge']
-        # print(merge_data)
-        source_folder = merge_data.get('sourceDirectory', None)
-        target_folder = merge_data.get('targetDirectory', None)
-        if 'dwg' in merge_data:
-            dwg_data = merge_data['dwg']
-            print(dwg_data)
-            for target, sources in dwg_data.items():
-                md = Dwg(target, source_folder=source_folder, target_folder=target_folder)
-                md.merge_files(sources)
-    # md = Dwg('../dxf/6mm_plywood_cut_left_right.dxf')
-    # md.merge_files([
-    #     {'../dxf/blocks/6mm_wood_cut_left.dxf': (-201.0, 0.0)},
-    #     {'../dxf/blocks/6mm_wood_cut_right.dxf': (201.0, 0.0)}
-    # ])
-    #
-    # md = Dwg('../dxf/6mm_plywood_cut_front_back.dxf')
-    # md.merge_files([
-    #     {'../dxf/blocks/6mm_wood_cut_front.dxf': (207.0, 0.0)},
-    #     {'../dxf/blocks/6mm_wood_cut_back.dxf': (-207.0, 0.0)}
-    # ])
-    #
-    # md = Dwg('../dxf/6mm_plywood_cut_top_bottom.dxf')
-    # md.merge_files([
-    #     {'../dxf/blocks/6mm_wood_cut_top.dxf': (-207.0, 205.0)},
-    #     {'../dxf/blocks/6mm_wood_cut_bottom.dxf': (207.0, 205.0)}
-    # ])
-    #
-    # md = Dwg('../dxf/6mm_plywood_cut_gpu.dxf')
-    # md.merge_files([
-    #     {'../dxf/blocks/6mm_wood_cut_gpu_front.dxf': (0.0, -17.0)},
-    #     {'../dxf/blocks/6mm_wood_cut_gpu_bottom.dxf': [(0.0, 61.0), (0.0, 183.0)]},
-    #     {'../dxf/blocks/6mm_wood_cut_gpu_support.dxf': [(0.0, -31.0), (0.0, -81.0), (0.0, -109.0),(0.0, -159.0)]},
-    #     {'../dxf/blocks/6mm_wood_cut_gpu_holder.dxf': [(-140.0, -63.0), (0.0, -63.0), (0.0, -141.0), (140.0, -63.0)]},
-    #     {'../dxf/blocks/6mm_wood_cut_nut_holder.dxf': [(-110.0, -140.0), (-90.0, -140.0), (90.0, -140.0), (110.0, -140.0)]},
-    #     {'../dxf/blocks/6mm_wood_cut_nut_cover.dxf': [(-190.0, -140.0), (-170.0, -140.0), (-150.0, -140.0), (-130.0, -140.0), (130.0, -140.0), (150.0, -140.0), (170.0, -140.0), (190.0, -140.0)]}
-    # ])
-    #
-    # # Frame
-    # b = Builder('6mm_wood_cut_top')
-    # b.extrude(6.0)
-    # b.translate((.0, .0, 407.0))
-    # b.save('TOP.stl')
-    #
-    # b = Builder('6mm_wood_cut_bottom')
-    # b.extrude(6.0)
-    # b.translate((.0, .0, 47.0))
-    # b.save('BOTTOM.stl')
-    #
-    # b = Builder('6mm_wood_cut_left')
-    # b.extrude(6.0)
-    # b.rotate(math.pi/2, (1.0, 0.0, .0), (.0, .0, .0))
-    # b.rotate(-math.pi/2, (.0, .0, 1.0), (.0, .0, .0))
-    # b.translate((-200.0, 0.0, .0))
-    # b.save('LEFT.stl')
-    #
-    # b = Builder('6mm_wood_cut_right')
-    # b.extrude(6.0)
-    # b.rotate(math.pi/2, (1.0, 0.0, .0), (.0, .0, .0))
-    # b.rotate(math.pi/2, (.0, .0, 1.0), (.0, .0, .0))
-    # b.translate((200.0, 0.0, .0))
-    # b.save('RIGHT.stl')
-    #
-    # b = Builder('6mm_wood_cut_front')
-    # b.extrude(6.0)
-    # b.rotate(math.pi / 2, (1.0, .0, .0), (.0, .0, .0))
-    # b.translate((0.0, 156.0, .0))
-    # b.save('FRONT.stl')
-    #
-    # b = Builder('6mm_wood_cut_back')
-    # b.extrude(6.0)
-    # b.rotate(math.pi / 2, (1.0, .0, .0), (.0, .0, .0))
-    # b.translate((0.0, -180.0, .0))
-    # b.save('BACK.stl')
-    #
-    # b = Builder('6mm_wood_cut_gpu_front')
-    # b.extrude(6.0)
-    # b.translate((0.0, -180.0, 281.0))
-    # b.save('GPU_FRONT.stl')
-    #
-    # b = Builder('6mm_wood_cut_gpu_bottom')
-    # b.extrude(6.0)
-    # b.translate((0.0, -73.0, 170.0))
-    # b.save('TOP.stl')
-    #
-    # b = Builder('6mm_wood_cut_gpu_support')
-    # b.extrude(6.0)
-    # b.rotate(-math.pi / 2, (.0, .0, 1.0), (.0, .0, .0))
-    # b.save('GPU_SUPPORT.stl')
+        merge(yaml_data, execute_action, execute_section)
+
+    if 'solidify' in yaml_data:
+        solidify(yaml_data, execute_action, execute_section)
+
+    if 'macros' in yaml_data:
+        pass
