@@ -58,8 +58,8 @@ def solidify(yaml_data, execute_action=None, execute_group=None):
 def help():
     print('Help...')
 
-if __name__ == "__main__":
-    yaml_file = '../.co2tools.yml'
+def main():
+    yaml_file = '.co2tools.yml'
     execute_action = None
     execute_section = None
 
@@ -86,3 +86,6 @@ if __name__ == "__main__":
 
     if 'macros' in yaml_data:
         pass
+
+if __name__ == '__main__':
+    main()
