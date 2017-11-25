@@ -1,0 +1,6 @@
+numpy
+scipy
+trimesh[easy]
+ezdxf
+networkx
+PyYaml
