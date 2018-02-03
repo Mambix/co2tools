@@ -3,6 +3,7 @@ import numpy as np
 import copy
 import threading
 import os.path
+import math
 
 
 class UnionThread(threading.Thread):
@@ -133,7 +134,10 @@ class Builder:
     def translate(self, matrix):
         self.stl.apply_transform(self.translation_matrix(matrix))
 
-    def rotate(self, angle, direction, point=None):
+    def rotate(self, instructions):
+        angle, direction, point = eval(instructions[0]), instructions[1], None
+        if len(instructions) > 2:
+            point = instructions[2]
         self.stl.apply_transform(self.rotation_matrix(angle, direction, point))
 
     def save(self, stl_file):
@@ -149,4 +153,8 @@ class Builder:
                 print('        {}: {}'.format(operation, instructions))
                 if operation == 'extrude':
                     self.extrude(instructions)
+                if operation == 'translate':
+                    self.translate(instructions)
+                if operation == 'rotate':
+                    self.rotate(instructions)
         self.save(stl_file)
