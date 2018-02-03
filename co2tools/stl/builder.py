@@ -2,8 +2,11 @@ import trimesh
 import numpy as np
 import copy
 import threading
-import os.path
+import os
 import math
+
+
+pi = math.pi
 
 
 class UnionThread(threading.Thread):
@@ -37,7 +40,7 @@ class Builder:
         for layer in self.layers:
             if layer == '0':
                 continue
-            E = copy.deepcopy(self.dxf.entities[self.dxf.metadata['layers'] == layer])
+            E = copy.deepcopy([e for e in self.dxf.entities if e.layer == layer])
             path = trimesh.path.Path2D(entities=E, vertices=self.dxf.vertices.copy())
             if extrude_height is None:
                 elements[layer] = path
@@ -49,26 +52,34 @@ class Builder:
                 if layer == self.LAYER_HOLES:
                     if isinstance(extruded, list):
                         for i in range(len(extruded)):
-                            extruded[i].vertices -= [0.0, 0.0, 1.0]
+                            extruded[i].apply_transform(self.translation_matrix([.0, .0, -1.0]))
                     else:
-                        extruded.vertices -= [0.0, 0.0, 1.0]
+                        extruded.apply_transform(self.translation_matrix([.0, .0, -1.0]))
                         extruded = [extruded]
                 elements[layer] = extruded
         return elements
 
     def __init__(self, dxf_file, source_folder=None, target_folder=None, base_folder=None):
-        self.__base_folder = None
+        self.__base_folder = ''
         if base_folder is not None:
             self.__base_folder = base_folder
             if self.__base_folder[-1] != '/':
                 self.__base_folder += '/'
-        self.__source_folder = None
+        self.__source_folder = self.__base_folder
         if source_folder is not None:
-            self.__source_folder = source_folder
-        self.__target_folder = None
+            self.__source_folder += source_folder
+            if self.__source_folder[-1] == '/':
+                self.__source_folder = self.__source_folder[:-1]
+            if not os.path.exists(self.__source_folder):
+                raise IOError(2, 'No source directory: \'{}\''.format(self.__source_folder))
+        self.__target_folder = self.__base_folder
         if target_folder is not None:
-            self.__target_folder = target_folder
-        self.__dxf_file = '{}{}/{}'.format(self.__base_folder, self.__source_folder, dxf_file)
+            self.__target_folder += target_folder
+            if self.__target_folder[-1] == '/':
+                self.__target_folder = self.__target_folder[:-1]
+            if not os.path.exists(self.__target_folder):
+                raise IOError(2, 'No target directory: \'{}\''.format(self.__target_folder))
+        self.__dxf_file = '{}/{}'.format(self.__source_folder, dxf_file)
         if not os.path.isfile(self.__dxf_file):
             raise IOError(2, 'No such file or directory: \'{}\''.format(self.__dxf_file))
 
@@ -78,7 +89,7 @@ class Builder:
 
         try:
             self.dxf = trimesh.load(self.__dxf_file)
-            self.layers = np.unique(self.dxf.metadata['layers'])
+            self.layers = np.unique(self.dxf.layers)
         except ValueError as e:
             raise BaseException(e, '{}: {}'.format(self.__dxf_file, e))
 
@@ -94,13 +105,17 @@ class Builder:
         if dxf_elements is None:
             return
         print('        Layers: {}'.format(dxf_elements.keys()))
+
+        if self.LAYER_CUT not in dxf_elements:
+            raise BaseException('Layer \'{}\' was not found!!!'.format(self.LAYER_CUT))
+
         self.stl = dxf_elements[self.LAYER_CUT]
         if self.LAYER_HOLES2 in dxf_elements:
             if dxf_elements[self.LAYER_HOLES2] != []:
                 self.stl = self.stl.difference(dxf_elements[self.LAYER_HOLES2], engine=self.ENGINE)
         if self.LAYER_HOLES in dxf_elements:
             holes_elements = dxf_elements[self.LAYER_HOLES]
-            if not isinstance(dxf_elements, list):
+            if not isinstance(holes_elements, list):
                 holes_elements = [holes_elements]
             while len(holes_elements)>1:
                 holes_even = holes_elements[0::2]
@@ -127,15 +142,19 @@ class Builder:
                         # t.result.show()
                         holes_elements.append(t.result)
             # self.stl.show()
-            # holes_elements[0].show()
+            # holes_elements[0][1].show()
             self.stl = self.stl.difference(holes_elements[0], engine=self.ENGINE)
+            # for hole in holes_elements[0]:
+            #     self.stl = self.stl.difference(hole, engine=self.ENGINE)
         # self.stl.show()
 
     def translate(self, matrix):
         self.stl.apply_transform(self.translation_matrix(matrix))
 
     def rotate(self, instructions):
-        angle, direction, point = eval(instructions[0]), instructions[1], None
+        if len(instructions) < 2:
+            raise BaseException("ERROR", "Need at least 2 items in list for rotation!!!")
+        angle, direction, point = eval(str(instructions[0]).lower()), instructions[1], None
         if len(instructions) > 2:
             point = instructions[2]
         self.stl.apply_transform(self.rotation_matrix(angle, direction, point))
@@ -143,7 +162,7 @@ class Builder:
     def save(self, stl_file):
         if self.stl is None:
             raise BaseException("ERROR", "No STL data to save!!!")
-        stl_file = '{}{}/{}'.format(self.__base_folder, self.__target_folder, stl_file)
+        stl_file = '{}/{}'.format(self.__target_folder, stl_file)
         print('        Saving: {}'.format(stl_file))
         self.stl.export(stl_file)
 
@@ -156,5 +175,9 @@ class Builder:
                 if operation == 'translate':
                     self.translate(instructions)
                 if operation == 'rotate':
-                    self.rotate(instructions)
+                    if isinstance(instructions[0], list):
+                        for instruction in instructions:
+                            self.rotate(instruction)
+                    else:
+                        self.rotate(instructions)
         self.save(stl_file)

@@ -1,6 +1,6 @@
 numpy
 scipy
-trimesh[easy]
-ezdxf
+trimesh[easy]==2.25.2
+ezdxf==0.8.5
 networkx
 PyYaml
