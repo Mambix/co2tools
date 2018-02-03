@@ -161,11 +161,21 @@ class DXF:
 
     def merge_files(self, yaml_data):
         if isinstance(yaml_data, dict):
-            for source, copies in yaml_data.items():
-                if not isinstance(copies[0], list):
-                    copies = [copies]
-                for copy in copies:
-                    self.merge(source, move=(copy[0], copy[1]))
+            for source, source_data in yaml_data.items():
+                if isinstance(source_data, dict):
+                    move = source_data.get('move', (0.0, 0.0))
+                    if isinstance(move, list):
+                        move = (move[0], move[1])
+                    self.__ignore_layers = source_data.get('ignoreLayers', [])
+                    self.__rename_layers = source_data.get('renameLayers', {})
+                    self.merge(source, move=move)
+                if isinstance(source_data, tuple):
+                    self.merge(source, move=source_data)
+                if isinstance(source_data, list):
+                    if not isinstance(source_data[0], list):
+                        copies = [source_data]
+                    for copy in copies:
+                        self.merge(source, move=(copy[0], copy[1]))
             return
         if isinstance(yaml_data, list):
             for source in yaml_data:

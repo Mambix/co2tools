@@ -28,6 +28,9 @@ setup(
     install_requires=['numpy', 'scipy', 'trimesh[easy]', 'ezdxf', 'networkx', 'PyYaml'],
     long_description=long_description,
     classifiers=[
+        "Development Status :: 2 - Pre-Alpha",
+	"Topic :: Multimedia :: Graphics :: 3D Modeling",
+	"License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.4",
 	"Programming Language :: Python :: 3.5",
