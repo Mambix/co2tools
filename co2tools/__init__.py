@@ -1,9 +1,8 @@
 import sys
 import os.path
-from co2tools.mergers import merge
-from co2tools.stl import solidify
+from mergers import merge
+from stl import solidify
 from yaml import load
-
 
 
 def help():
