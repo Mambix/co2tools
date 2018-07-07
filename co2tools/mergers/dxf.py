@@ -11,15 +11,15 @@ class DXF:
             dxf.layers.new(name=lay.dxf.name, dxfattribs={'linetype': lay.dxf.linetype, 'color': lay.dxf.color})
 
     def __init__(self, dxf_file, ignore_layers=None, rename_layers=None, base_folder=None, source_folder=None, target_folder=None):
-        self.__base_folder = None
-        if base_folder is not None:
+        self.__base_folder = ''
+        if base_folder != '':
             self.__base_folder = base_folder
             if self.__base_folder[-1] != '/':
                 self.__base_folder += '/'
         self.__source_folder = None
         if source_folder is not None:
             self.__source_folder = source_folder
-        self.__target_folder = None
+        self.__target_folder = ''
         if target_folder is not None:
             self.__target_folder = target_folder
         self.__dxf_file = '{}{}/{}'.format(self.__base_folder, self.__target_folder, dxf_file)

@@ -4,3 +4,4 @@ trimesh[easy]
 ezdxf
 networkx
 PyYaml
+pyassimp

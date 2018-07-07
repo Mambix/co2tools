@@ -55,14 +55,14 @@ class Builder:
                 elements[layer] = extruded
         return elements
 
-    def __init__(self, dxf_file, source_folder=None, target_folder=None, base_folder=None):
-        self.__base_folder = None
-        if base_folder is not None:
+    def __init__(self, dxf_file, source_folder='', target_folder='', base_folder=''):
+        self.__base_folder = ''
+        if base_folder != '':
             self.__base_folder = base_folder
             if self.__base_folder[-1] != '/':
                 self.__base_folder += '/'
-        self.__source_folder = None
-        if source_folder is not None:
+        self.__source_folder = ''
+        if source_folder != '':
             self.__source_folder = source_folder
         self.__target_folder = None
         if target_folder is not None:
@@ -76,7 +76,8 @@ class Builder:
         self.stl = None
 
         try:
-            self.dxf = trimesh.load(self.__dxf_file)
+            print(self.__dxf_file)
+            self.dxf = trimesh.load(self.__dxf_file, 'dxf')
             self.layers = np.unique(self.dxf.metadata['layers'])
         except ValueError as e:
             raise BaseException(e, '{}: {}'.format(self.__dxf_file, e))
