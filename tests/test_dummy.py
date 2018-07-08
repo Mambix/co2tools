@@ -8,7 +8,7 @@ import unittest
 
 class TestDummy(unittest.TestCase):
     def setUp(self):
-	self.held, sys.stdout = sys.stdout, StringIO()
+        self.held, sys.stdout = sys.stdout, StringIO()
 
     def test_dummy(self):
-	self.assertTrue(True)
+        self.assertTrue(True)
