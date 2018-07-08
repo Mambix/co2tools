@@ -15,8 +15,8 @@ matrix:
     # 'module' object has no attribute 'isclose'
     # - python: 3.4
     #   env: TOXENV=py34
-    - python: 3.5-dev
-      env: TOXENV=py35
+    # - python: 3.5-dev
+    #   env: TOXENV=py35
     - python: 3.6
       env: TOXENV=py36
     - python: 3.5
