@@ -17,10 +17,10 @@ matrix:
     #   env: TOXENV=py34
     # - python: 3.5-dev
     #   env: TOXENV=py35
-    - python: 3.6
-      env: TOXENV=py36
     - python: 3.5
       env: TOXENV=py35
+    - python: 3.6
+      env: TOXENV=py36
 before_install:
   - python --version
   - uname -a
@@ -41,8 +41,9 @@ script:
   - pip install .
   # - tox -e coverage-erase,$TOXENV
   - tox -e $TOXENV
-after_success:
-  - tox -e coveralls
+# after_success:
+  # - tox -e coveralls
+  # - coveralls
 after_failure:
   - more .tox/log/* | cat
   - more .tox/*/log/* | cat
