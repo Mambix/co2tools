@@ -36,7 +36,7 @@ class Builder:
         for layer in self.layers:
             if layer == '0':
                 continue
-            E = copy.deepcopy(self.dxf.entities[self.dxf.metadata['layers'] == layer])
+            E = [x for x in self.dxf.entities if x.layer == layer]
             path = trimesh.path.Path2D(entities=E, vertices=self.dxf.vertices.copy())
             if extrude_height is None:
                 elements[layer] = path
@@ -55,7 +55,13 @@ class Builder:
                 elements[layer] = extruded
         return elements
 
-    def __init__(self, dxf_file, source_folder='', target_folder='', base_folder=''):
+    def __init__(self, dxf_file, source_folder='', target_folder='', base_folder='', options=None):
+        self.LAYER_HOLES = 'HOLES'
+        self.LAYER_HOLES2 = 'HOLES_PLEXI'
+        self.LAYER_CUT = 'CUT'
+        self.ENGINE = 'blender'
+        self.THREADS = 6
+
         self.__base_folder = ''
         if base_folder != '':
             self.__base_folder = base_folder
@@ -78,15 +84,18 @@ class Builder:
         try:
             print(self.__dxf_file)
             self.dxf = trimesh.load(self.__dxf_file, 'dxf')
-            self.layers = np.unique(self.dxf.metadata['layers'])
+            self.layers = np.unique(self.dxf.layers)
         except ValueError as e:
             raise BaseException(e, '{}: {}'.format(self.__dxf_file, e))
 
-        self.LAYER_HOLES = 'HOLES'
-        self.LAYER_HOLES2 = 'HOLES_PLEXI'
-        self.LAYER_CUT = 'CUT'
-        self.ENGINE = 'blender'
-        self.THREADS = 6
+        if options is not None:
+            if 'LAYER_CUT' in options:
+                self.LAYER_CUT = options['LAYER_CUT']
+            if 'LAYER_HOLES' in options:
+                self.LAYER_HOLES = options['LAYER_HOLES']
+            if 'LAYER_HOLES2' in options:
+                self.LAYER_HOLES2 = options['LAYER_HOLES2']
+
         print('    Source: {}'.format(self.__dxf_file))
 
     def extrude(self, extrude_height):
@@ -94,6 +103,8 @@ class Builder:
         if dxf_elements is None:
             return
         print('        Layers: {}'.format(dxf_elements.keys()))
+        if self.LAYER_CUT not in dxf_elements:
+            raise BaseException(1, 'Layer {} is not present in DXF file.'.format(self.LAYER_CUT))
         self.stl = dxf_elements[self.LAYER_CUT]
         if self.LAYER_HOLES2 in dxf_elements:
             if dxf_elements[self.LAYER_HOLES2] != []:

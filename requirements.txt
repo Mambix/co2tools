@@ -1,7 +1,7 @@
-numpy
-scipy
-trimesh[easy]
-ezdxf
-networkx
-PyYaml
-pyassimp
+numpy==1.13.3
+scipy==1.1.0
+trimesh[easy]==2.31.20
+ezdxf==0.8.8
+networkx==2.1
+PyYaml==3.12
+pyassimp==4.1.3
