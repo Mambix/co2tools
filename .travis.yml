@@ -29,6 +29,7 @@ before_install:
 install:
   - pip install -U setuptools
   - pip install tox coverage coveralls
+  - pip install -r requirements.txt
   - virtualenv --version
   - easy_install --version
   - pip --version
