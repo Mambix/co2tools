@@ -2,7 +2,7 @@ import sys
 import os.path
 from co2tools.mergers import merge
 from co2tools.stl import solidify
-from __version__ import __version__
+from co2tools.__version__ import __version__
 from yaml import load
 
 
