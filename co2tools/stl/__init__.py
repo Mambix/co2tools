@@ -30,7 +30,7 @@ def solidify(yaml_data, execute_action=None, execute_group=None, base_folder=Non
             modifications = data.get('modifications', None)
             if modifications is None:
                 raise BaseException('ERROR', 'No \'modifications\' section in YAML file!!!')
-            b = Builder(source, source_folder=source_folder, target_folder=target_folder, base_folder=base_folder)
+            b = Builder(source, source_folder=source_folder, target_folder=target_folder, base_folder=base_folder, options=yaml_data['solidify'])
             if layer_cut is not None:
                 b.LAYER_CUT = layer_cut
             if layer_holes is not None:

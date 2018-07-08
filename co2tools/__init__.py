@@ -1,7 +1,8 @@
 import sys
 import os.path
-from mergers import merge
-from stl import solidify
+from co2tools.mergers import merge
+from co2tools.stl import solidify
+from __version__ import __version__
 from yaml import load
 
 
@@ -12,12 +13,15 @@ def main():
     yaml_file = '.co2tools.yml'
     execute_action = None
     execute_section = None
-    base_folder = None
+    base_folder = ''
 
     i = 1
     while i < len(sys.argv):
         arg = sys.argv[i]
         i += 1
+        if arg.lower() == '--version':
+            print('co2tools v{}'.format(__version__))
+            quit()
         if arg[-4:].lower() == '.yml':
             yaml_file = arg
             continue
@@ -47,14 +51,14 @@ def main():
     with open(yaml_file, 'r') as f:
         yaml_data = load(f)
 
-    if 'merge' in yaml_data:
-        merge(yaml_data, execute_action, execute_section, base_folder)
+        if 'merge' in yaml_data:
+            merge(yaml_data, execute_action, execute_section, base_folder)
 
-    if 'solidify' in yaml_data:
-        solidify(yaml_data, execute_action, execute_section, base_folder)
+        if 'solidify' in yaml_data:
+            solidify(yaml_data, execute_action, execute_section, base_folder)
 
-    if 'macros' in yaml_data:
-        pass
+        if 'macros' in yaml_data:
+            pass
 
 if __name__ == '__main__':
     main()
