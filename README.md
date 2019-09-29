@@ -4,9 +4,24 @@
 [![PyPI](https://img.shields.io/pypi/v/co2tools.svg)](https://pypi.python.org/pypi/co2tools)  
 Easily convert 2D DXF drawing into 3D models
 
+# installation
+```
+pip3 install co2tools
+```
+
 # usage
 In order to run this tool create a file `.co2tools.yml` in your project folder.
 This file will contain instructions which co2tools tool will execute.
+Then you can run the tool in your folder and it will use yml file to execute instructions:
+```
+co2tools
+# only merge
+co2tools merge
+# only solidify
+co2tools solidify
+# specific group
+co2tools solidify gpu
+```
 
 # .co2tools.yml structure
 There are 2 use cases for this tool. First one is merging multiple 2D `DXF` files into a single file.

@@ -7,7 +7,15 @@ from yaml import load
 
 
 def help():
-    print('Help...')
+    print('co2tools [options] [action] [group]')
+    print('Options:')
+    print('\t--version\tPrint version')
+    print('\t--base=folder\tSet base folder')
+    print('Actions:')
+    print('\tmerge\tRun only merge from yml file')
+    print('\tsolidify\tRun only solidify from yml file')
+    print('Group:')
+    print('\tgpu\tDefines what group to run from yml file for given action')
 
 def main():
     yaml_file = '.co2tools.yml'

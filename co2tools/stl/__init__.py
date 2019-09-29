@@ -6,7 +6,6 @@ def solidify(yaml_data, execute_action=None, execute_group=None, base_folder=Non
         if execute_action != 'solidify':
             return
     solid_data = yaml_data['solidify']
-    print(solid_data)
     source_folder = solid_data.get('sourceDirectory', None)
     target_folder = solid_data.get('targetDirectory', None)
     layer_cut = solid_data.get('cutLayer', None)
