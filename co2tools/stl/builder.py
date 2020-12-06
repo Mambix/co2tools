@@ -78,13 +78,15 @@ class Builder:
             raise IOError(2, 'No such file or directory: \'{}\''.format(self.__dxf_file))
 
         self.dxf = None
-        self.layers = None
+        self.layers = []
         self.stl = None
 
         try:
             print(self.__dxf_file)
             self.dxf = trimesh.load(self.__dxf_file, 'dxf')
-            self.layers = np.unique(self.dxf.layers)
+            for layer in self.dxf.layers:
+                if layer is not None and layer not in self.layers:
+                    self.layers.append(layer)
         except ValueError as e:
             raise BaseException(e, '{}: {}'.format(self.__dxf_file, e))
 
