@@ -125,7 +125,7 @@ class DXF:
                 poly.closed = e.closed
             elif e.DXFTYPE == 'SPLINE':
                 self.add_layer(e_lay, dxf, src)
-                points = e.get_fit_points()
+                points = e.fit_points
                 new_points = []
                 for p in points:
                     new_points.append((p[0] + move[0], p[1] + move[1], p[2]))
@@ -134,14 +134,14 @@ class DXF:
                     'flags': e.dxf.flags
                 })
 
-                points = e.get_control_points()
+                points = e.control_points
                 new_points = []
                 for p in points:
                     new_points.append((p[0] + move[0], p[1] + move[1], p[2]))
-                spline.set_control_points(new_points)
+                spline.control_points = new_points
 
-                spline.set_knot_values(e.get_knot_values())
-                spline.set_weights(e.get_weights())
+                spline.knots = e.knots
+                spline.weights = e.weights
 
                 spline.closed = e.closed
             elif e.DXFTYPE == 'MODERN':
