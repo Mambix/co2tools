@@ -165,3 +165,5 @@ src/build.number
 *.dxf
 *.FCMacro
 *.yml
+
+launch.json

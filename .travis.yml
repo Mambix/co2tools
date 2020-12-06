@@ -53,3 +53,11 @@ notifications:
   email:
     on_success: always
     on_failure: always
+deploy:
+  provider: pypi
+  user: mambix
+  password:
+    secure: "SnSEZJK9zI0EQMLb6N3cAyw7c9Clr4j2xmFioRay/U8ggJrf3vMvgbUKEhDfPtCZDwQjPYig5Nlez3Ays72Qv30RISG1NCBuoRLvAE99GP6d9+MIR4+t1Gli6ckLsQOwvfgtsGGyI/IZLggX0zuuHr29To5T8YQi5TwB/krz4ro="
+  on:
+    branch: master
+    tags: true

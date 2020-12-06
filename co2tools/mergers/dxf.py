@@ -55,21 +55,20 @@ class DXF:
         for e in source_msp:
             if e.dxf.layer in self.__ignore_layers:
                 continue
-            t = '{}'.format(e.dxftype)
             e_lay = self.__rename_layers.get(e.dxf.layer, e.dxf.layer)
-            if t[14:17] == 'Arc':
+            if e.DXFTYPE == 'ARC':
                 self.add_layer(e_lay, dxf, src)
                 c = tuple(map(operator.add, e.dxf.center, move))
                 target_msp.add_arc(c, e.dxf.radius, e.dxf.start_angle, e.dxf.end_angle, dxfattribs={'layer': e_lay})
-            elif t[14:20] == 'Circle':
+            elif e.DXFTYPE == 'CIRCLE':
                 self.add_layer(e_lay, dxf, src)
                 c = tuple(map(operator.add, e.dxf.center, move))
                 target_msp.add_circle(c, e.dxf.radius, dxfattribs={'layer': e_lay})
-            elif t[14:19] == 'Point':
+            elif e.DXFTYPE == 'POINT':
                 self.add_layer(e_lay, dxf, src)
                 loc = tuple(map(operator.add, e.dxf.location, move))
                 target_msp.add_point(loc, dxfattribs={'layer': e_lay})
-            elif t[14:18] == 'Text':
+            elif e.DXFTYPE == 'TEXT':
                 self.add_layer(e_lay, dxf, src)
                 c = (e.dxf.insert[0]+move[0], e.dxf.insert[1]+move[1], e.dxf.insert[2])
                 target_msp.add_text(e.dxf.text, dxfattribs={
@@ -82,11 +81,10 @@ class DXF:
                     'valign': e.dxf.valign,
                     'layer': e_lay
                 })
-            elif t[14:19] == 'MText':
-                # print('MTEXT: {}'.format(e.get_text()))
+            elif e.DXFTYPE == 'MTEXT':
                 self.add_layer(e_lay, dxf, src)
                 c = (e.dxf.insert[0] + move[0], e.dxf.insert[1] + move[1], e.dxf.insert[2])
-                target_msp.add_mtext(e.get_text(), dxfattribs={
+                target_msp.add_mtext(e.text, dxfattribs={
                     'insert': c,
                     'char_height': e.dxf.char_height,
                     'width': e.dxf.width,
@@ -98,7 +96,7 @@ class DXF:
                     'line_spacing_factor': e.dxf.line_spacing_factor,
                     'layer': e_lay
                 })
-            elif t[14:18] == 'Line':
+            elif e.DXFTYPE == 'LINE':
                 self.add_layer(e_lay, dxf, src)
                 start = tuple(map(operator.add, e.dxf.start, move))
                 end = tuple(map(operator.add, e.dxf.end, move))
@@ -114,7 +112,7 @@ class DXF:
             #         'flags': e.dxf.flags
             #     })
             #     poly.closed = e.closed
-            elif t[14:20] == 'LWPoly':
+            elif e.DXFTYPE == 'LWPOLYLINE':
                 self.add_layer(e_lay, dxf, src)
                 points = e.get_points()
                 new_points = []
@@ -125,7 +123,7 @@ class DXF:
                     'flags': e.dxf.flags
                 })
                 poly.closed = e.closed
-            elif t[14:20] == 'Spline':
+            elif e.DXFTYPE == 'SPLINE':
                 self.add_layer(e_lay, dxf, src)
                 points = e.get_fit_points()
                 new_points = []
@@ -146,14 +144,13 @@ class DXF:
                 spline.set_weights(e.get_weights())
 
                 spline.closed = e.closed
-            elif t[14:20] == 'Modern':
+            elif e.DXFTYPE == 'MODERN':
                 # addLayer(e.dxf.layer, dxf, src)
                 # target_msp.add_entity(e)
                 # ignore = 1
                 pass
             else:
-                print(t[14:])
-                print(e_lay)
+                print('Unhandled[{0}]: {1}'.format(e_lay, e.DXFTYPE))
                 # target_msp.add_entity(e)
             # source_msp.unlink_entity(e)
             # target_msp.add_entity(e)
