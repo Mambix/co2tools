@@ -3,7 +3,7 @@ import os.path
 from co2tools.mergers import merge
 from co2tools.stl import solidify
 from co2tools.__version__ import __version__
-from yaml import load
+from yaml import load, SafeLoader
 
 
 def help():
@@ -57,7 +57,7 @@ def main():
         raise BaseException(1, 'File \'{}\' does not exist!!!'.format(yaml_file))
 
     with open(yaml_file, 'r') as f:
-        yaml_data = load(f)
+        yaml_data = load(f, Loader=SafeLoader)
 
         if 'merge' in yaml_data:
             merge(yaml_data, execute_action, execute_section, base_folder)

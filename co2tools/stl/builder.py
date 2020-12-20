@@ -1,5 +1,6 @@
 import trimesh
 import numpy as np
+import math
 import copy
 import threading
 import os.path
@@ -42,17 +43,9 @@ class Builder:
                 elements[layer] = path
             else:
                 extrude_by = extrude_height
-                if layer == self.LAYER_HOLES:
-                    extrude_by += 2.0
-                extruded = path.extrude(extrude_by)
-                if layer == self.LAYER_HOLES:
-                    if isinstance(extruded, list):
-                        for i in range(len(extruded)):
-                            extruded[i].vertices -= [0.0, 0.0, 1.0]
-                    else:
-                        extruded.vertices -= [0.0, 0.0, 1.0]
-                        extruded = [extruded]
-                elements[layer] = extruded
+                if layer in [self.LAYER_HOLES, self.LAYER_HOLES2]:
+                    extrude_by += 1.0
+                elements[layer] = path.extrude(extrude_by)
         return elements
 
     def __init__(self, dxf_file, source_folder='', target_folder='', base_folder='', options=None):
@@ -60,7 +53,7 @@ class Builder:
         self.LAYER_HOLES2 = 'HOLES_PLEXI'
         self.LAYER_CUT = 'CUT'
         self.ENGINE = 'blender'
-        self.THREADS = 6
+        self.THREADS = 16
 
         self.__base_folder = ''
         if base_folder != '':
@@ -108,12 +101,10 @@ class Builder:
         if self.LAYER_CUT not in dxf_elements:
             raise BaseException(1, 'Layer {} is not present in DXF file.'.format(self.LAYER_CUT))
         self.stl = dxf_elements[self.LAYER_CUT]
+        # self.stl.show()
         if self.LAYER_HOLES2 in dxf_elements:
-            if dxf_elements[self.LAYER_HOLES2] != []:
-                self.stl = self.stl.difference(dxf_elements[self.LAYER_HOLES2], engine=self.ENGINE)
-        if self.LAYER_HOLES in dxf_elements:
-            holes_elements = dxf_elements[self.LAYER_HOLES]
-            if not isinstance(dxf_elements, list):
+            holes_elements = dxf_elements[self.LAYER_HOLES2]
+            if not isinstance(holes_elements, list):
                 holes_elements = [holes_elements]
             while len(holes_elements)>1:
                 holes_even = holes_elements[0::2]
@@ -137,11 +128,52 @@ class Builder:
 
                     for t in threads:
                         t.join()
-                        # t.result.show()
                         holes_elements.append(t.result)
-            # self.stl.show()
-            # holes_elements[0].show()
-            self.stl = self.stl.difference(holes_elements[0], engine=self.ENGINE)
+            holes_elements[0].apply_transform(self.translation_matrix([0.0, 0.0, -0.5]))
+            diff_result = self.stl.difference(holes_elements[0], engine=self.ENGINE)
+            # Workaround because it returns random results
+            for i in range(5):
+                tmp_result = self.stl.difference(holes_elements[0], engine=self.ENGINE)
+                if tmp_result.mass > diff_result.mass:
+                    diff_result = tmp_result
+                    break
+            self.stl = diff_result
+        if self.LAYER_HOLES in dxf_elements:
+            holes_elements = dxf_elements[self.LAYER_HOLES]
+            if not isinstance(holes_elements, list):
+                holes_elements = [holes_elements]
+            while len(holes_elements)>1:
+                holes_even = holes_elements[0::2]
+                holes_odd = holes_elements[1::2]
+                holes_elements = []
+
+                if len(holes_even) > len(holes_odd):
+                    holes_elements.append(holes_even[0])
+                    del holes_even[0]
+
+                while len(holes_odd) > 0:
+                    threads = []
+                    for i in range(len(holes_odd)):
+                        ut = UnionThread(holes_even[-1], holes_odd[-1])
+                        del holes_even[-1]
+                        del holes_odd[-1]
+                        ut.start()
+                        threads.append(ut)
+                        if len(threads) == self.THREADS:
+                            break
+
+                    for t in threads:
+                        t.join()
+                        holes_elements.append(t.result)
+            holes_elements[0].apply_transform(self.translation_matrix([0.0, 0.0, -0.5]))
+            diff_result = self.stl.difference(holes_elements[0], engine=self.ENGINE)
+            # Workaround because it returns random results
+            for i in range(5):
+                tmp_result = self.stl.difference(holes_elements[0], engine=self.ENGINE)
+                if tmp_result.mass > diff_result.mass:
+                    diff_result = tmp_result
+                    break
+            self.stl = diff_result
         # self.stl.show()
 
     def translate(self, matrix):
