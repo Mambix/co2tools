@@ -101,7 +101,9 @@ class Builder:
         if self.LAYER_CUT not in dxf_elements:
             raise BaseException(1, 'Layer {} is not present in DXF file.'.format(self.LAYER_CUT))
         self.stl = dxf_elements[self.LAYER_CUT]
-        # self.stl.show()
+        if isinstance(self.stl, list):
+            raise BaseException("ERROR", "Empty STL object!!!")
+            return
         if self.LAYER_HOLES2 in dxf_elements:
             holes_elements = dxf_elements[self.LAYER_HOLES2]
             if not isinstance(holes_elements, list):

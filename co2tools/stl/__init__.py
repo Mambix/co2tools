@@ -1,7 +1,7 @@
 from co2tools.stl.builder import Builder
 
 
-def solidify(yaml_data, execute_action=None, execute_group=None, base_folder=None):
+def solidify(yaml_data, execute_action=None, execute_group=None, execute_file=None, base_folder=None, engine=None):
     if execute_action is not None:
         if execute_action != 'solidify':
             return
@@ -25,6 +25,9 @@ def solidify(yaml_data, execute_action=None, execute_group=None, base_folder=Non
         print('Processing group: {}'.format(execute_group))
         dxf_data = solid_data[execute_group]
         for source, data in dxf_data.items():
+            if execute_file is not None:
+                if execute_file != source:
+                    continue
             target = data.get('save', '{}.stl'.format(source[:-4]))
             modifications = data.get('modifications', None)
             if modifications is None:
@@ -36,4 +39,6 @@ def solidify(yaml_data, execute_action=None, execute_group=None, base_folder=Non
                 b.LAYER_HOLES = layer_holes
             if layer_holes2 is not None:
                 b.LAYER_HOLES2 = layer_holes2
+            if engine in ['blender', 'scad']:
+                b.ENGINE = engine
             b.build(modifications, target)

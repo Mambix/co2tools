@@ -21,6 +21,8 @@ def main():
     yaml_file = '.co2tools.yml'
     execute_action = None
     execute_section = None
+    execute_file = None
+    boolean_engine =  None
     base_folder = ''
 
     i = 1
@@ -30,8 +32,9 @@ def main():
         if arg.lower() == '--version':
             print('co2tools v{}'.format(__version__))
             quit()
-        if arg[-4:].lower() == '.yml':
-            yaml_file = arg
+        if arg.lower() == '--yaml':
+            yaml_file = sys.argv[i]
+            i += 1
             continue
         if arg.lower() == 'help':
             help()
@@ -42,11 +45,18 @@ def main():
                 base_folder += '/'
             i += 1
             continue
+        if arg.lower() == '--engine':
+            boolean_engine = sys.argv[i]
+            i += 1
+            continue
         if execute_action is None:
             execute_action = arg
             continue
         if execute_section is None:
             execute_section = arg
+            continue
+        if execute_file is None:
+            execute_file = arg
             continue
         raise BaseException(1, 'Unknown command line argument!!!')
 
@@ -63,7 +73,7 @@ def main():
             merge(yaml_data, execute_action, execute_section, base_folder)
 
         if 'solidify' in yaml_data:
-            solidify(yaml_data, execute_action, execute_section, base_folder)
+            solidify(yaml_data, execute_action, execute_section, execute_file, base_folder, boolean_engine)
 
         if 'macros' in yaml_data:
             pass
