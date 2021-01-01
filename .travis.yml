@@ -3,8 +3,6 @@ language: python
 # 3.5-dev because of http://bugs.python.org/issue25131
 matrix:
   include:
-    - python: 3.5
-      env: TOXENV=py35
     - python: 3.6
       env: TOXENV=py36
     - python: 3.7
