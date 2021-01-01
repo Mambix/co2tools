@@ -1,7 +1,7 @@
 # co2tools
 [![Travis](https://img.shields.io/travis/Mambix/co2tools.svg)](https://travis-ci.org/Mambix/co2tools)
 [![Coverage Status](https://coveralls.io/repos/github/Mambix/co2tools/badge.svg?branch=master)](https://coveralls.io/github/Mambix/co2tools?branch=master)
-[![PyPI](https://img.shields.io/pypi/v/co2tools.svg)](https://pypi.python.org/pypi/co2tools)  
+[![PyPI](https://img.shields.io/pypi/v/co2tools.svg)](https://pypi.python.org/pypi/co2tools)
 Easily convert 2D DXF drawing into 3D models
 
 # installation
@@ -26,8 +26,8 @@ co2tools solidify gpu
 # .co2tools.yml structure
 There are 2 use cases for this tool. First one is merging multiple 2D `DXF` files into a single file.
 I personally use this method to join parts I draw in separate DXF files into a single DXF file that is ready
-to be cut with CO2 laser cutter.  
-Second usage of this tool is to create solids from 2D parts in DXF files. Note that at the moment 
+to be cut with CO2 laser cutter.
+Second usage of this tool is to create solids from 2D parts in DXF files. Note that at the moment
 this was intended to have one part drawn per DXF file.
 
 ## Merge
@@ -58,11 +58,11 @@ merge:
 Merge sections contains a couple of instructions we can pass to the library.
 By default `sourceDirectory` and `targetDirectory` are set to current folder.
 If needed you can override that by setting either relative or absolute path to your data.
-I like to have DXF parts in subfolder `dxf/blocks` from where the parts are taken and the resulting 
-merged DXF if placed in `dxf` subfolder.  
+I like to have DXF parts in subfolder `dxf/blocks` from where the parts are taken and the resulting
+merged DXF if placed in `dxf` subfolder.
 `default` section contains actual instructions needed for the library to combine parts.
 First level that follows is the name of the destination dxf file.
-This is the file that will contain merged data.  
+This is the file that will contain merged data.
 Next level provides the name of the source files. These are the files containing individual parts.
 Values on the right describe what needs to be done to the data before it's added to the target file.
 `[-201.0, 0.0]` instructs that the part is placed at X=-201.0 and Y=0.0 coordinates.
