@@ -1,45 +1,37 @@
 language: python
-
-# 3.5-dev because of http://bugs.python.org/issue25131
 matrix:
   include:
-    - python: 3.6
-      env: TOXENV=py36
-    - python: 3.7
-      env: TOXENV=py37
-    - python: 3.7.4
-      env: TOXENV=py37
-    - python: 3.8
-      env: TOXENV=py38
-    # - python: 3.9
-    #   env: TOXENV=py39
-    # - python: pypy
-    #   env: TOXENV=pypy
+  - python: 3.6
+    env: TOXENV=py36
+  - python: 3.7
+    env: TOXENV=py37
+  - python: 3.7.4
+    env: TOXENV=py37
+  - python: 3.8
+    env: TOXENV=py38
 before_install:
-  - python --version
-  - uname -a
-  - lsb_release -a
-  - sudo apt-get -qq update
-  - sudo apt-get install -y enchant
+- python --version
+- uname -a
+- lsb_release -a
+- sudo apt-get -qq update
+- sudo apt-get install -y enchant
 install:
-  - pip install -U setuptools
-  - pip install tox coverage coveralls
-  - pip install -r requirements.txt
-  - virtualenv --version
-  - easy_install --version
-  - pip --version
-  - tox --version
-  - coverage --version
+- pip install -U setuptools
+- pip install tox coverage coveralls
+- pip install -r requirements.txt
+- virtualenv --version
+- easy_install --version
+- pip --version
+- tox --version
+- coverage --version
 script:
-    # Test install with current version of setuptools
-  - pip install .
-  # - tox -e coverage-erase,$TOXENV
-  - tox -e $TOXENV
+- pip install .
+- tox -e $TOXENV
 after_success:
-  - tox -e coveralls
+- tox -e coveralls
 after_failure:
-  - more .tox/log/* | cat
-  - more .tox/*/log/* | cat
+- more .tox/log/* | cat
+- more .tox/*/log/* | cat
 notifications:
   email:
     on_success: always
@@ -47,9 +39,9 @@ notifications:
 deploy:
   provider: pypi
   twine_version: 2.0.0
-  user: mambix
+  username: __token__
   password:
-    secure: "SnSEZJK9zI0EQMLb6N3cAyw7c9Clr4j2xmFioRay/U8ggJrf3vMvgbUKEhDfPtCZDwQjPYig5Nlez3Ays72Qv30RISG1NCBuoRLvAE99GP6d9+MIR4+t1Gli6ckLsQOwvfgtsGGyI/IZLggX0zuuHr29To5T8YQi5TwB/krz4ro="
+    secure: dc5VVxJpSjuhkN31fOqEv62a8FbLIQNdEdDfopTjShpab9mAiRrSt+dYrwx81w9j9bgTWCR0SbLlIrC4NyqAjkEoQPDQMpt2EJfU6iLVxdQHYS41Shy+4OT/xfWjgaEa32JSwV7cvq8EO/CVHgnnwy3DyQnrG/8WyU5RejAX+EXW2mCYrJxGYryburVx4z+TO2gtiODbeoWSfjf+0+smPz9pNrnDgAPotQbW23FTvRoX+p8HKgyy8T38jTF3kgEuuen44ntWecTPmsFkP9MrpUmkBspRgPtfjq0GlbcYp56NGeqG8BbS2LSin9VkAxl89tVOgXexg6N+WlS0TOmEtytjgoiuZGgcxpf7cKrLjA/q7OWrSAQGHSSmAy919Ku6Hvc3bB7TYYxW4a+IKiSSrxT7I2qaGKCm7DUJDiKmZIdK9AoxVzm6Ps1cKDTPLvwlQztm7rXGsySo7vfoiDhgipxhbDBu7aDLt8vRb9rlpd1gC0jTqeL1OtCx4ZBNLXl0xI6++7etsXgymG98GlYVsiyeHJYxFBGRCO7VzqG4UWgGP8WCAjKQxPuIePET7vgsRyLQO2ALdemgJ3P9ozW8muaOaayvoyqSxAdCvmPVDKh90E74GdLMLICqPtnI4V50gjLnyuhBQE4BS6ymDSFFXviTNFuSHOkMjGNZiOR3Wcg=
   on:
     branch: master
     tags: true
