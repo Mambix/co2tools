@@ -1,7 +1,7 @@
 from co2tools.mergers.dxf import DXF
 
 
-def merge(yaml_data, execute_action=None, execute_group=None, base_folder=None):
+def merge(yaml_data, execute_action=None, execute_group=None, execute_file=None, base_folder=None):
     if execute_action is not None:
         if execute_action != 'merge':
             return
@@ -11,6 +11,8 @@ def merge(yaml_data, execute_action=None, execute_group=None, base_folder=None):
     groups = merge_data.get('groups', None)
     if groups is None:
         groups = ['default']
+    else:
+        merge_data = groups
     if execute_group is not None:
         if execute_group in groups:
             groups = [execute_group]
@@ -20,5 +22,8 @@ def merge(yaml_data, execute_action=None, execute_group=None, base_folder=None):
         dxf_data = merge_data[execute_group]
         print(dxf_data)
         for target, yaml_data in dxf_data.items():
+            if execute_file is not None:
+                if execute_file != target:
+                    continue
             md = DXF(target, source_folder=source_folder, target_folder=target_folder, base_folder=base_folder)
             md.merge_files(yaml_data)

@@ -58,6 +58,9 @@ def main():
         if execute_file is None:
             execute_file = arg
             continue
+        else:
+            execute_file = '{} {}'.format(execute_file, arg)
+            continue
         raise BaseException(1, 'Unknown command line argument!!!')
 
     if base_folder is not None:
@@ -70,7 +73,7 @@ def main():
         yaml_data = load(f, Loader=SafeLoader)
 
         if 'merge' in yaml_data:
-            merge(yaml_data, execute_action, execute_section, base_folder)
+            merge(yaml_data, execute_action, execute_section, execute_file, base_folder)
 
         if 'solidify' in yaml_data:
             solidify(yaml_data, execute_action, execute_section, execute_file, base_folder, boolean_engine)
