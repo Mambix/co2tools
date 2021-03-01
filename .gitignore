@@ -166,4 +166,6 @@ src/build.number
 *.FCMacro
 *.yml
 
+input.txt
 launch.json
+.ruby-version

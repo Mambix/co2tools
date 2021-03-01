@@ -1,6 +1,8 @@
 import ezdxf
 import os
 import operator
+import math
+from ezdxf import math as dxfMath
 
 
 class DXF:
@@ -32,6 +34,24 @@ class DXF:
         self.__rename_layers = {}
         if isinstance(rename_layers, dict):
             self.__rename_layers = rename_layers
+        self.sum_perimeter = 0.0
+        self.DEBUG = False
+
+    def area(self, points):
+        return 3.14
+
+    def distance(self, start, end):
+        if type(start) is tuple:
+            return math.pow(math.pow(start[0]-end[0], 2) + math.pow(start[1]-end[1],2), 0.5)
+        return math.pow(math.pow(start.x-end.x, 2) + math.pow(start.y-end.y,2), 0.5)
+
+    def length(self, points):
+        length = 0.0
+        oldP = points[-1]
+        for p in points:
+            length += self.distance(oldP, p)
+            oldP = p
+        return length
 
     def merge(self, merge_dxf, move=(0.0, 0.0)):
         merge_dxf = '{}{}/{}'.format(self.__base_folder, self.__source_folder, merge_dxf)
@@ -60,10 +80,12 @@ class DXF:
                 self.add_layer(e_lay, dxf, src)
                 c = tuple(map(operator.add, e.dxf.center, move))
                 target_msp.add_arc(c, e.dxf.radius, e.dxf.start_angle, e.dxf.end_angle, dxfattribs={'layer': e_lay})
+                self.sum_perimeter += 2 * math.pi * e.dxf.radius * abs(e.dxf.start_angle-e.dxf.end_angle) / 360.0
             elif e.DXFTYPE == 'CIRCLE':
                 self.add_layer(e_lay, dxf, src)
                 c = tuple(map(operator.add, e.dxf.center, move))
                 target_msp.add_circle(c, e.dxf.radius, dxfattribs={'layer': e_lay})
+                self.sum_perimeter += 2 * math.pi * e.dxf.radius
             elif e.DXFTYPE == 'POINT':
                 self.add_layer(e_lay, dxf, src)
                 loc = tuple(map(operator.add, e.dxf.location, move))
@@ -101,6 +123,7 @@ class DXF:
                 start = tuple(map(operator.add, e.dxf.start, move))
                 end = tuple(map(operator.add, e.dxf.end, move))
                 target_msp.add_line(start, end, dxfattribs={'layer': e_lay})
+                self.sum_perimeter += self.distance(e.dxf.start, e.dxf.end)
             # elif t[14:22] == 'Polyline':
             #     addLayer(e_lay, dxf, src)
             #     points = e.points()
@@ -123,6 +146,7 @@ class DXF:
                     'flags': e.dxf.flags
                 })
                 poly.closed = e.closed
+                self.sum_perimeter += self.length(points)
             elif e.DXFTYPE == 'SPLINE':
                 self.add_layer(e_lay, dxf, src)
                 points = e.fit_points
@@ -144,19 +168,22 @@ class DXF:
                 spline.weights = e.weights
 
                 spline.closed = e.closed
+                self.sum_perimeter += self.length(points)
             elif e.DXFTYPE == 'MODERN':
                 # addLayer(e.dxf.layer, dxf, src)
                 # target_msp.add_entity(e)
                 # ignore = 1
                 pass
             else:
-                print('Unhandled[{0}]: {1}'.format(e_lay, e.DXFTYPE))
+                if self.DEBUG:
+                    print('Unhandled[{0}]: {1}'.format(e_lay, e.DXFTYPE))
                 # target_msp.add_entity(e)
             # source_msp.unlink_entity(e)
             # target_msp.add_entity(e)
         dxf.saveas(self.__dxf_file)
 
     def merge_files(self, yaml_data):
+        self.sum_perimeter = 0.0
         if isinstance(yaml_data, dict):
             for source, source_data in yaml_data.items():
                 if isinstance(source_data, dict):
