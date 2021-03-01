@@ -2,6 +2,6 @@ numpy==1.19.4
 scipy==1.4.1
 trimesh[easy]==3.8.19
 triangle==20200424
-ezdxf==0.15.2
+ezdxf==0.14.2
 networkx==2.5
 PyYaml==5.3.1
