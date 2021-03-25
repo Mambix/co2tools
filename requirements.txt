@@ -4,4 +4,4 @@ trimesh[easy]==3.8.19
 triangle==20200424
 ezdxf==0.14.2
 networkx==2.5
-PyYaml==5.3.1
+PyYaml==5.4
