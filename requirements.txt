@@ -1,4 +1,4 @@
-numpy==1.19.4
+numpy==1.22.0
 scipy==1.4.1
 trimesh[easy]==3.8.19
 triangle==20200424
